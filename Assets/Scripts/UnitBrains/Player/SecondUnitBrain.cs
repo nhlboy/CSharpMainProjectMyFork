@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
 using Model.Runtime.Projectiles;
 using Unity.VisualScripting;
 using UnityEngine;
+using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 namespace UnitBrains.Player
 {
@@ -35,35 +39,28 @@ namespace UnitBrains.Player
 
             float currentTemperature = GetTemperature();
 
-            while (true)
+
+            if (currentTemperature >= overheatTemperature) return;
+
+            // Реализуй механику увеличения снарядов с каждым выстрелом.
+            // a.Обрати внимание на код в методе GenerateProjectiles, который
+            // генерирует снаряды и добавляет их в некий лист.Тебе необходимо
+            // обернуть его в цикл так, чтобы при каждом выстреле количество
+            // снарядов соответствовало текущей температуре оружия.
+            // b.Какой цикл для этого больше подходит - реши самостоятельно.
+
+            for (int i = 0; i < overheatTemperature; i++)
             {
-                if (currentTemperature >= overheatTemperature)
-                {
-                    break;
-                }
+                var projectile = CreateProjectile(forTarget);
+                AddProjectileToList(projectile, intoList);
 
-                // Реализуй механику увеличения снарядов с каждым выстрелом.
-                // a.Обрати внимание на код в методе GenerateProjectiles, который
-                // генерирует снаряды и добавляет их в некий лист.Тебе необходимо
-                // обернуть его в цикл так, чтобы при каждом выстреле количество
-                // снарядов соответствовало текущей температуре оружия.
-                // b.Какой цикл для этого больше подходит - реши самостоятельно.
-                else
-                {
-                    for (int i = 0; i < overheatTemperature; i++)
-                    {
-                        var projectile = CreateProjectile(forTarget);
-                        AddProjectileToList(projectile, intoList);
-
-                        // b.Каждый вызов метода GenerateProjectiles соответствует одному выстрелу.
-                        // С каждым выстрелом нагрев оружия должен увеличиваться.Для этого используй
-                        // метод IncreaseTemperature, он также уже реализован в данном скрипте, тебе
-                        // необходимо лишь его вызвать.
-
-                        IncreaseTemperature();
-                    }
-                }
+                // b.Каждый вызов метода GenerateProjectiles соответствует одному выстрелу.
+                // С каждым выстрелом нагрев оружия должен увеличиваться.Для этого используй
+                // метод IncreaseTemperature, он также уже реализован в данном скрипте, тебе
+                // необходимо лишь его вызвать.                        
             }
+            IncreaseTemperature();
+
 
             ///////////////////////////////////////
         }
@@ -78,14 +75,58 @@ namespace UnitBrains.Player
         {
             ///////////////////////////////////////
             // Homework 1.4 (1st block, 4rd module)
-            ///////////////////////////////////////
+
+            //Определи какая из целей в result находится ближе
+            //всего к нашей базе. Используй подход, который мы разобрали
+            //в 5 - ом уроке «Подготовка к домашнему заданию».
+
+            //Для определения расстояния от конкретной цели до нашей базы,
+            //используй метод DistanceToOwnBase.
+            //Ты не увидишь его реализации в этом скрипте, но не волнуйся,
+            //это не помешает тебе его вызвать.
+            //Этот метод принимает цель, расстояние от которой до базы мы хотим
+            //узнать, а возвращает как раз это расстояние.
+
+            //После того как ты найдешь ближайшую к базе цель, в том случае если
+            //она действительно была найдена, очисти список result и добавь в
+            //него эту цель.
+
+            //Верни список result.
+            
             List<Vector2Int> result = GetReachableTargets();
             while (result.Count > 1)
             {
+
+                foreach (Vector2Int distanceToBase in result)
+                {
+                    // Определяем расстояние от конкретной цели до нашей базы
+                    float distance = DistanceToOwnBase(distanceToBase);
+
+                    // Сохраняеи ее в список
+                    List<float> distanceList = new List<float>();
+                    distanceList.Add(distance);
+
+                    // Сортируем список
+                    distanceList.Sort();
+
+                    // Сохраняем самую ближайшую цель
+                    float toAttack = distanceList[0];
+
+                    // Конвертируем float into Vector2Int
+
+                    Vector2Int vector2IntValue = new Vector2Int((int)toAttack, (int)toAttack);
+
+                    // очищаем список result
+                    result.Clear();
+
+                    // Добавляем в список result ближайшую цель
+                    result.Add(vector2IntValue);
+                }
+
                 result.RemoveAt(result.Count - 1);
             }
             return result;
-            ///////////////////////////////////////
+
         }
 
 
