@@ -75,6 +75,7 @@ namespace UnitBrains.Player
         {
             ///////////////////////////////////////
             // Homework 1.4 (1st block, 4rd module)
+            ///////////////////////////////////////
 
             //Определи какая из целей в result находится ближе
             //всего к нашей базе. Используй подход, который мы разобрали
@@ -92,7 +93,7 @@ namespace UnitBrains.Player
             //него эту цель.
 
             //Верни список result.
-            
+
             List<Vector2Int> result = GetReachableTargets();
             while (result.Count > 1)
             {
