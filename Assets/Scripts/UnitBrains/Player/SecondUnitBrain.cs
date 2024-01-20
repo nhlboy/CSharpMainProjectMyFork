@@ -71,9 +71,54 @@ namespace UnitBrains.Player
             ///////////////////////////////////////
             // Homework 1.4 (1st block, 4rd module)
             ///////////////////////////////////////
+
+            //Определи какая из целей в result находится ближе
+            //всего к нашей базе. Используй подход, который мы разобрали
+            //в 5 - ом уроке «Подготовка к домашнему заданию».
+
+            //Для определения расстояния от конкретной цели до нашей базы,
+            //используй метод DistanceToOwnBase.
+            //Ты не увидишь его реализации в этом скрипте, но не волнуйся,
+            //это не помешает тебе его вызвать.
+            //Этот метод принимает цель, расстояние от которой до базы мы хотим
+            //узнать, а возвращает как раз это расстояние.
+
+            //После того как ты найдешь ближайшую к базе цель, в том случае если
+            //она действительно была найдена, очисти список result и добавь в
+            //него эту цель.
+
+            //Верни список result.
+
             List<Vector2Int> result = GetReachableTargets();
             while (result.Count > 1)
             {
+
+                foreach (Vector2Int distanceToBase in result)
+                {
+                    // Определяем расстояние от конкретной цели до нашей базы
+                    float distance = DistanceToOwnBase(distanceToBase);
+
+                    // Сохраняеи ее в список
+                    List<float> distanceList = new List<float>();
+                    distanceList.Add(distance);
+
+                    // Сортируем список
+                    distanceList.Sort();
+
+                    // Сохраняем самую ближайшую цель
+                    float toAttack = distanceList[0];
+
+                    // Конвертируем float into Vector2Int
+
+                    Vector2Int vector2IntValue = new Vector2Int((int)toAttack, (int)toAttack);
+
+                    // очищаем список result
+                    result.Clear();
+
+                    // Добавляем в список result ближайшую цель
+                    result.Add(vector2IntValue);
+                }
+
                 result.RemoveAt(result.Count - 1);
             }
             return result;
