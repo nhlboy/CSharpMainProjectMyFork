@@ -94,36 +94,24 @@ namespace UnitBrains.Player
             //Верни список result.
             
             List<Vector2Int> result = GetReachableTargets();
-            while (result.Count > 1)
+            float minDistance = float.MaxValue;
+            Vector2Int bestTarget = new Vector2Int(0, 0);
+
+            while (result.Count > 0)
             {
-
-                foreach (Vector2Int distanceToBase in result)
+                foreach (Vector2Int target in result)
                 {
-                    // Определяем расстояние от конкретной цели до нашей базы
-                    float distance = DistanceToOwnBase(distanceToBase);
-
-                    // Сохраняеи ее в список
-                    List<float> distanceList = new List<float>();
-                    distanceList.Add(distance);
-
-                    // Сортируем список
-                    distanceList.Sort();
-
-                    // Сохраняем самую ближайшую цель
-                    float toAttack = distanceList[0];
-
-                    // Конвертируем float into Vector2Int
-
-                    Vector2Int vector2IntValue = new Vector2Int((int)toAttack, (int)toAttack);
-
-                    // очищаем список result
+                    float distance = DistanceToOwnBase(target);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        bestTarget = target;
+                    }
                     result.Clear();
-
-                    // Добавляем в список result ближайшую цель
-                    result.Add(vector2IntValue);
-                }
-
-                result.RemoveAt(result.Count - 1);
+                    result.Add(bestTarget);
+                    result.RemoveAt(result.Count - 1);
+                }            
+            
             }
             return result;
 
