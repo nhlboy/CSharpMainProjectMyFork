@@ -49,7 +49,7 @@ namespace UnitBrains.Player
             // снарядов соответствовало текущей температуре оружия.
             // b.Какой цикл для этого больше подходит - реши самостоятельно.
 
-            for (int i = 0; i < overheatTemperature; i++)
+            for (int i = 0; i <= currentTemperature; i++)
             {
                 var projectile = CreateProjectile(forTarget);
                 AddProjectileToList(projectile, intoList);
@@ -97,24 +97,20 @@ namespace UnitBrains.Player
             float minDistance = float.MaxValue;
             Vector2Int bestTarget = new Vector2Int(0, 0);
 
-            while (result.Count > 0)
+            foreach (Vector2Int target in result)
             {
-                foreach (Vector2Int target in result)
+                float distance = DistanceToOwnBase(target);
+                if (distance > minDistance)
                 {
-                    float distance = DistanceToOwnBase(target);
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        bestTarget = target;
-                    }
-                    result.Clear();
-                    result.Add(bestTarget);
-                    result.RemoveAt(result.Count - 1);
+                    minDistance = distance;
+                    bestTarget = target;
                 }            
-            
             }
+            
             return result;
+            if (minDistance < float.MaxValue) result.Add(bestTarget); 
 
+            return result;
         }
 
 
