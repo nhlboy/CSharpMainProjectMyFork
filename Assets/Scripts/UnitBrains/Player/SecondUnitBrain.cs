@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Model;
 using Model.Runtime.Projectiles;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -92,23 +93,50 @@ namespace UnitBrains.Player
             //него эту цель.
 
             //Верни список result.
-            
-            List<Vector2Int> result = GetReachableTargets();
-            float minDistance = float.MaxValue;
-            Vector2Int bestTarget = new Vector2Int(0, 0);
 
-            foreach (Vector2Int target in result)
-            {
-                float distance = DistanceToOwnBase(target);
-                if (distance > minDistance)
-                {
-                    minDistance = distance;
-                    bestTarget = target;
-                }            
-            }
+            List<Vector2Int> result = new List<Vector2Int>();
+
+            // Получаем все цели
+            //List<Vector2Int> allTargets = GetAllTargets();
+            IEnumerable<Vector2Int> allTargets = GetAllTargets();
             
-            return result;
-            if (minDistance < float.MaxValue) result.Add(bestTarget); 
+
+            // Если есть хотя бы одна цель
+            if (allTargets.Count > 0)
+            {
+                float minDistance = float.MaxValue;
+                Vector2Int bestTarget = Vector2Int.zero;
+
+                foreach (Vector2Int target in allTargets)
+                {
+                    float distance = DistanceToOwnBase(target);
+                    // Если цель вне зоны досягаемости, добавляем ее в коллекцию целей, к которым нужно идти
+
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            bestTarget = target;
+                        }
+                    
+                    else
+                    {
+                        // Если цель в зоне досягаемости, добавляем ее в результат
+                        result.Add(target);
+                    }
+                }
+
+                // Если была найдена цель вне зоны досягаемости, добавляем ее в результат
+                if (minDistance < float.MaxValue)
+                {
+                    result.Add(bestTarget);
+                }
+            }
+            else
+            {
+                // Если нет доступных целей, добавляем базу противника в качестве цели
+                int enemyBaseId = IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerID;
+                result.Add(runtimeModel.RoMap.Bases[enemyBaseId]);
+            }
 
             return result;
         }
