@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using Model;
 using Model.Runtime.Projectiles;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
@@ -19,6 +20,7 @@ namespace UnitBrains.Player
         private float _temperature = 0f;
         private float _cooldownTime = 0f;
         private bool _overheated;
+        private List<Vector2Int> _currentTargets = new List<Vector2Int>();
 
 
         ///////////////////////////////////////
@@ -66,77 +68,48 @@ namespace UnitBrains.Player
             ///////////////////////////////////////
         }
 
-
         public override Vector2Int GetNextStep()
         {
+            List<Vector2Int> result = new List<Vector2Int>();
+            List<Vector2Int> _allTargets = new List<Vector2Int>();
             return base.GetNextStep();
         }
 
+
         protected override List<Vector2Int> SelectTargets()
         {
-            ///////////////////////////////////////
-            // Homework 1.4 (1st block, 4rd module)
-
-            //Определи какая из целей в result находится ближе
-            //всего к нашей базе. Используй подход, который мы разобрали
-            //в 5 - ом уроке «Подготовка к домашнему заданию».
-
-            //Для определения расстояния от конкретной цели до нашей базы,
-            //используй метод DistanceToOwnBase.
-            //Ты не увидишь его реализации в этом скрипте, но не волнуйся,
-            //это не помешает тебе его вызвать.
-            //Этот метод принимает цель, расстояние от которой до базы мы хотим
-            //узнать, а возвращает как раз это расстояние.
-
-            //После того как ты найдешь ближайшую к базе цель, в том случае если
-            //она действительно была найдена, очисти список result и добавь в
-            //него эту цель.
-
-            //Верни список result.
-
             List<Vector2Int> result = new List<Vector2Int>();
-
-            // Получаем все цели
-            //List<Vector2Int> allTargets = GetAllTargets();
             IEnumerable<Vector2Int> allTargets = GetAllTargets();
-            
+            float minDistance = float.MaxValue;
+            Vector2Int bestTarget = Vector2Int.zero;
 
-            // Если есть хотя бы одна цель
-            if (allTargets.Count > 0)
+            foreach (Vector2Int target in allTargets)
             {
-                float minDistance = float.MaxValue;
-                Vector2Int bestTarget = Vector2Int.zero;
+                float distance = DistanceToOwnBase(target);
+                // Если цель вне зоны досягаемости, добавляем ее в коллекцию целей, к которым нужно идти
 
-                foreach (Vector2Int target in allTargets)
+                if (distance < minDistance)
                 {
-                    float distance = DistanceToOwnBase(target);
-                    // Если цель вне зоны досягаемости, добавляем ее в коллекцию целей, к которым нужно идти
-
-                        if (distance < minDistance)
-                        {
-                            minDistance = distance;
-                            bestTarget = target;
-                        }
-                    
-                    else
-                    {
-                        // Если цель в зоне досягаемости, добавляем ее в результат
-                        result.Add(target);
-                    }
+                    minDistance = distance;
+                    bestTarget = target;
                 }
+            }
 
-                // Если была найдена цель вне зоны досягаемости, добавляем ее в результат
-                if (minDistance < float.MaxValue)
-                {
-                    result.Add(bestTarget);
-                }
+            _currentTargets.Clear();
+                        
+            if (minDistance < float.MaxValue)
+            {
+                _currentTargets.Add(bestTarget);
+                if (IsTargetInRange(bestTarget)) result.Add(bestTarget);
             }
             else
             {
                 // Если нет доступных целей, добавляем базу противника в качестве цели
-                int enemyBaseId = IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerID;
-                result.Add(runtimeModel.RoMap.Bases[enemyBaseId]);
+                int enemyBaseId = IsPlayerUnitBrain ? RuntimeModel.BotPlayerId : RuntimeModel.PlayerId;
+                _currentTargets.Add(runtimeModel.RoMap.Bases[enemyBaseId]);
             }
+
+    
 
             return result;
         }
